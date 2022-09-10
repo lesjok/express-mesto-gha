@@ -43,24 +43,25 @@ const getUsers = (req, res) => {
 };
 const getUser = (req, res) => {
   User.findById(req.params.userId)
-    .orFail(() => {
-      throw new Error();
-    })
     .then((user) => {
+      if (!user) {
+        res.status(STATUS_CODE.notFound).send({
+          message: 'Пользователь по указанному id не найден.',
+        });
+        return;
+      }
       res.status(STATUS_CODE.success).send(user);
     })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
+      if (error.name === 'CastError') {
         res
-          .status(error.status)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
-      } else {
-        res
-          .status(STATUS_CODE.serverError)
-          .send({
-            message: 'Произошла ошибка на сервере. Повторите запрос',
-          });
+          .status(STATUS_CODE.dataError)
+          .send({ message: 'Данные некорректны' });
+        return;
       }
+      res.status(STATUS_CODE.serverError).send({
+        message: 'Произошла ошибка на сервере. Повторите запрос',
+      });
     });
 };
 const updateUser = (req, res) => {
@@ -86,8 +87,8 @@ const updateUser = (req, res) => {
       }
       if (err.name === 'CastError') {
         res
-          .status(STATUS_CODE.notFound)
-          .send({ message: 'Пользователь с указанным id не найден.' });
+          .status(STATUS_CODE.dataError)
+          .send({ message: 'Данные некорректны' });
         return;
       }
       res
