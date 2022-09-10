@@ -44,7 +44,6 @@ const deleteCard = (req, res) => {
         res.status(STATUS_CODE.notFound).send({
           message: 'Карточка с указанным _id не найдена.',
         });
-        return;
       }
       res.send({ data: card });
     })
@@ -72,7 +71,6 @@ const likeCard = (req, res) => {
         res
           .status(STATUS_CODE.notFound)
           .send({ message: 'Карточка с указанным id не найдена.' });
-        return;
       }
       res.send({
         _id: card._id,
@@ -85,13 +83,11 @@ const likeCard = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
-        return;
       }
       if (error.name === 'CastError') {
         res
-          .status(STATUS_CODE.notFound)
+          .status(STATUS_CODE.dataError)
           .send({ message: 'Карточка с указанным id не найдена.' });
-        return;
       }
       res
         .status(STATUS_CODE.serverError)
@@ -109,7 +105,6 @@ const deleteLikeCard = (req, res) => {
         res.status(STATUS_CODE.notFound).send({
           message: 'Карточка с указанным id не найдена.',
         });
-        return;
       }
       res.send({
         _id: card._id,
@@ -122,13 +117,11 @@ const deleteLikeCard = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Переданы некорректные данные для снятия лайка.' });
-        return;
       }
       if (error.name === 'CastError') {
         res
-          .status(STATUS_CODE.notFound)
+          .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
-        return;
       }
       res
         .status(STATUS_CODE.serverError)

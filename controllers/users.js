@@ -17,7 +17,6 @@ const createUser = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Переданы некорректные данные при создании пользователя.' });
-        return;
       }
       res
         .status(STATUS_CODE.serverError)
@@ -48,7 +47,6 @@ const getUser = (req, res) => {
         res.status(STATUS_CODE.notFound).send({
           message: 'Пользователь по указанному id не найден.',
         });
-        return;
       }
       res.status(STATUS_CODE.success).send(user);
     })
@@ -57,7 +55,6 @@ const getUser = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
-        return;
       }
       res.status(STATUS_CODE.serverError).send({
         message: 'Произошла ошибка на сервере. Повторите запрос',
@@ -83,13 +80,11 @@ const updateUser = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Переданы некорректные данные.' });
-        return;
       }
       if (err.name === 'CastError') {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
-        return;
       }
       res
         .status(STATUS_CODE.serverError)
@@ -110,13 +105,11 @@ const updateAvatar = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Переданы некорректные данные.' });
-        return;
       }
       if (err.name === 'CastError') {
         res
           .status(STATUS_CODE.notFound)
           .send({ message: 'Пользователь с указанным id не найден.' });
-        return;
       }
       res
         .status(STATUS_CODE.serverError)
