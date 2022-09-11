@@ -25,16 +25,10 @@ const getCards = (req, res) => {
     .then((cards) => {
       res.status(STATUS_CODE.success).send(cards);
     })
-    .catch((error) => {
-      if (error.name === 'ValidationError') {
-        res.status(STATUS_CODE.notFound).send({
-          message: 'Карточка или пользователь не найден.',
-        });
-      } else {
-        res
-          .status(STATUS_CODE.serverError)
-          .send({ message: 'Произошла ошибка. Повторите запрос' });
-      }
+    .catch(() => {
+      res
+        .status(STATUS_CODE.serverError)
+        .send({ message: 'Произошла ошибка. Повторите запрос' });
     });
 };
 const deleteCard = (req, res) => {
@@ -42,8 +36,9 @@ const deleteCard = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(STATUS_CODE.notFound).send({
-          message: 'Карточка с указанным _id не найдена.',
+          message: 'Карточка с указанным id не найдена.',
         });
+        return;
       }
       res.send({ data: card });
     })
@@ -71,6 +66,7 @@ const likeCard = (req, res) => {
         res
           .status(STATUS_CODE.notFound)
           .send({ message: 'Карточка с указанным id не найдена.' });
+        return;
       }
       res.send({
         _id: card._id,
@@ -82,9 +78,8 @@ const likeCard = (req, res) => {
       if (error.name === 'ValidationError') {
         res
           .status(STATUS_CODE.dataError)
-          .send({ message: 'Данные некорректны' });
-      }
-      if (error.name === 'CastError') {
+          .send({ message: 'Переданы некорректные данные для добавления лайка.' });
+      } else if (error.name === 'CastError') {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Карточка с указанным id не найдена.' });
@@ -105,6 +100,7 @@ const deleteLikeCard = (req, res) => {
         res.status(STATUS_CODE.notFound).send({
           message: 'Карточка с указанным id не найдена.',
         });
+        return;
       }
       res.send({
         _id: card._id,
@@ -117,8 +113,7 @@ const deleteLikeCard = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Переданы некорректные данные для снятия лайка.' });
-      }
-      if (error.name === 'CastError') {
+      } else if (error.name === 'CastError') {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });

@@ -7,12 +7,6 @@ const STATUS_CODE = require('./errors/errors');
 
 const app = express();
 app.use(express.json());
-app.use((req, res, next) => {
-  console.log({
-    body: req.body,
-  });
-  next();
-});
 
 app.use((req, res, next) => {
   req.user = {

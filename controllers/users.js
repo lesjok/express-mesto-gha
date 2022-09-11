@@ -17,6 +17,7 @@ const createUser = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Переданы некорректные данные при создании пользователя.' });
+        return;
       }
       res
         .status(STATUS_CODE.serverError)
@@ -28,16 +29,10 @@ const getUsers = (req, res) => {
     .then((users) => {
       res.status(STATUS_CODE.success).send(users);
     })
-    .catch((error) => {
-      if (error.name === 'ValidationError') {
-        res.status(STATUS_CODE.dataError).send({
-          message: 'Данные некорректны',
-        });
-      } else {
-        res
-          .status(STATUS_CODE.serverError)
-          .send({ message: 'Произошла ошибка на сервере. Повторите запрос' });
-      }
+    .catch(() => {
+      res
+        .status(STATUS_CODE.serverError)
+        .send({ message: 'Произошла ошибка на сервере. Повторите запрос' });
     });
 };
 const getUser = (req, res) => {
@@ -47,6 +42,7 @@ const getUser = (req, res) => {
         res.status(STATUS_CODE.notFound).send({
           message: 'Пользователь по указанному id не найден.',
         });
+        return;
       }
       res.status(STATUS_CODE.success).send(user);
     })
@@ -55,6 +51,7 @@ const getUser = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
+        return;
       }
       res.status(STATUS_CODE.serverError).send({
         message: 'Произошла ошибка на сервере. Повторите запрос',
@@ -69,19 +66,26 @@ const updateUser = (req, res) => {
     { name, about },
     { new: true, runValidators: true, upsert: false },
   )
-    .then((user) => res.send({
-      _id: user._id,
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-    }))
+    .then((user) => {
+      if (!user) {
+        res.status(STATUS_CODE.notFound).send({
+          message: 'Пользователь по указанному id не найден.',
+        });
+        return;
+      }
+      res.send({
+        _id: user._id,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Переданы некорректные данные.' });
-      }
-      if (err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
@@ -99,14 +103,21 @@ const updateAvatar = (req, res) => {
     { avatar },
     { new: true, runValidators: true, upsert: false },
   )
-    .then((user) => res.send({ _id: user._id, avatar: user.avatar }))
+    .then((user) => {
+      if (!user) {
+        res.status(STATUS_CODE.notFound).send({
+          message: 'Пользователь по указанному id не найден.',
+        });
+        return;
+      }
+      res.send({ _id: user._id, avatar: user.avatar });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Переданы некорректные данные.' });
-      }
-      if (err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         res
           .status(STATUS_CODE.notFound)
           .send({ message: 'Пользователь с указанным id не найден.' });
