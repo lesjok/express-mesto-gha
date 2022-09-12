@@ -89,10 +89,11 @@ const updateUser = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
+      } else {
+        res
+          .status(STATUS_CODE.serverError)
+          .send({ message: 'Произошла ошибка на сервере. Повторите запрос' });
       }
-      res
-        .status(STATUS_CODE.serverError)
-        .send({ message: 'Произошла ошибка на сервере. Повторите запрос' });
     });
 };
 const updateAvatar = (req, res) => {
@@ -121,10 +122,11 @@ const updateAvatar = (req, res) => {
         res
           .status(STATUS_CODE.notFound)
           .send({ message: 'Пользователь с указанным id не найден.' });
+      } else {
+        res
+          .status(STATUS_CODE.serverError)
+          .send({ message: 'Произошла ошибка на сервере. Повторите запрос' });
       }
-      res
-        .status(STATUS_CODE.serverError)
-        .send({ message: 'Произошла ошибка на сервере. Повторите запрос' });
     });
 };
 module.exports = {

@@ -9,8 +9,16 @@
     "start": "nodemon app.js",
     "dev": "node app.js"
   },
-  "author": "Olesya Dorofeeva",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lesjok/express-mesto-gha.git"
+  },
+  "author": "lesjok",
   "license": "ISC",
+  "homepage": "https://github.com/lesjok/express-mesto-gha#readme",
+  "bugs": {
+    "url": "https://github.com/lesjok/express-mesto-gha/issues"
+  },
   "devDependencies": {
     "eslint": "^8.23.0",
     "eslint-config-airbnb-base": "^15.0.0",
