@@ -83,10 +83,11 @@ const likeCard = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Карточка с указанным id не найдена.' });
+      } else {
+        res
+          .status(STATUS_CODE.serverError)
+          .send({ message: 'Произошла ошибка. Повторите запрос' });
       }
-      res
-        .status(STATUS_CODE.serverError)
-        .send({ message: 'Произошла ошибка. Повторите запрос' });
     });
 };
 const deleteLikeCard = (req, res) => {
@@ -117,10 +118,11 @@ const deleteLikeCard = (req, res) => {
         res
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
+      } else {
+        res
+          .status(STATUS_CODE.serverError)
+          .send({ message: 'Произошла ошибка. Повторите запрос' });
       }
-      res
-        .status(STATUS_CODE.serverError)
-        .send({ message: 'Произошла ошибка. Повторите запрос' });
     });
 };
 module.exports = {
