@@ -44,7 +44,7 @@ const login = (req, res, next) => {
       }
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
       res
-        .cookie('jwt', token, {
+        .cookie('access_token', token, {
           httpOnly: true,
         })
         .send({
