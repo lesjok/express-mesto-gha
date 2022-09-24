@@ -34,28 +34,26 @@ const createUser = (req, res, next) => {
   });
 };
 // eslint-disable-next-line consistent-return
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(STATUS_CODE.dataError).send({ message: 'Ошибка!' });
-  }
-  User.findOne({ email })
+
+  User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
-        return res.status(STATUS_CODE.notFound).send({ message: 'Неверная почта или пароль.' });
+        next(new NotFound());
       }
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
       res
         .cookie('jwt', token, {
           httpOnly: true,
+        })
+        .send({
+          _id: user._id,
+          email: user.email,
+          avatar: user.avatar,
+          name: user.name,
+          about: user.about,
         });
-      return res.status(STATUS_CODE.success).send({
-        _id: user._id,
-        email: user.email,
-        avatar: user.avatar,
-        name: user.name,
-        about: user.about,
-      });
     });
 };
 const getCurrentUser = (req, res, next) => {
