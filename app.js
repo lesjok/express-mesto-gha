@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const { celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
 const routerUsers = require('./routes/users');
 const routerCards = require('./routes/cards');
 const STATUS_CODE = require('./errors/errors');
@@ -40,6 +41,7 @@ app.use('/cards', routerCards);
 app.use('*', (req, res) => {
   res.status(STATUS_CODE.notFound).send({ message: 'Страница не найдена' });
 });
+app.use(errors());
 app.use(errorMessage);
 app.listen(3000, () => {
   console.log('Сервер запущен');
