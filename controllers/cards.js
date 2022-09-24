@@ -1,8 +1,10 @@
 const Card = require('../models/card');
-
+const ForbiddenError = require('../errors/forbidden');
+const BadRequestError = require('../errors/badRequest');
 const STATUS_CODE = require('../errors/errors');
+const NotFound = require('../errors/notFound');
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link, owner = req.user._id } = req.body;
   Card.create({ name, link, owner })
     .then((card) => {
@@ -10,9 +12,7 @@ const createCard = (req, res) => {
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        res.status(STATUS_CODE.dataError).send({
-          message: 'Переданы некорректные данные при создании карточки.',
-        });
+        next(new BadRequestError('Данные некорректны'));
       } else {
         res
           .status(STATUS_CODE.serverError)
@@ -31,14 +31,11 @@ const getCards = (req, res) => {
         .send({ message: 'Произошла ошибка. Повторите запрос' });
     });
 };
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(STATUS_CODE.notFound).send({
-          message: 'Карточка с указанным id не найдена.',
-        });
-        return;
+        next(new NotFound('Карточка не найдена.'));
       }
       res.send({ data: card });
     })
@@ -48,14 +45,12 @@ const deleteCard = (req, res) => {
           .status(STATUS_CODE.dataError)
           .send({ message: 'Данные некорректны' });
       } else {
-        res
-          .status(STATUS_CODE.serverError)
-          .send({ message: 'Произошла ошибка. Повторите запрос' });
+        next(new ForbiddenError('Удалить данную карточку невозможно. Вы не являетесь ее создателем'));
       }
     });
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -63,10 +58,7 @@ const likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res
-          .status(STATUS_CODE.notFound)
-          .send({ message: 'Карточка с указанным id не найдена.' });
-        return;
+        next(new NotFound('Карточка не найдена.'));
       }
       res.send({
         _id: card._id,
@@ -75,22 +67,14 @@ const likeCard = (req, res) => {
       });
     })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        res
-          .status(STATUS_CODE.dataError)
-          .send({ message: 'Переданы некорректные данные для добавления лайка.' });
-      } else if (error.name === 'CastError') {
-        res
-          .status(STATUS_CODE.dataError)
-          .send({ message: 'Карточка с указанным id не найдена.' });
+      if (error.name === 'CastError') {
+        next(new BadRequestError('Данные некорректны'));
       } else {
-        res
-          .status(STATUS_CODE.serverError)
-          .send({ message: 'Произошла ошибка. Повторите запрос' });
+        next(error);
       }
     });
 };
-const deleteLikeCard = (req, res) => {
+const deleteLikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -98,10 +82,7 @@ const deleteLikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(STATUS_CODE.notFound).send({
-          message: 'Карточка с указанным id не найдена.',
-        });
-        return;
+        next(new NotFound('Карточка не найдена.'));
       }
       res.send({
         _id: card._id,
@@ -110,18 +91,10 @@ const deleteLikeCard = (req, res) => {
       });
     })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        res
-          .status(STATUS_CODE.dataError)
-          .send({ message: 'Переданы некорректные данные для снятия лайка.' });
-      } else if (error.name === 'CastError') {
-        res
-          .status(STATUS_CODE.dataError)
-          .send({ message: 'Данные некорректны' });
+      if (error.name === 'CastError') {
+        next(new BadRequestError('Данные некорректны'));
       } else {
-        res
-          .status(STATUS_CODE.serverError)
-          .send({ message: 'Произошла ошибка. Повторите запрос' });
+        next(error);
       }
     });
 };
