@@ -54,8 +54,7 @@ const login = (req, res, next) => {
           name: user.name,
           about: user.about,
         });
-    })
-    .catch(next);
+    });
 };
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
