@@ -14,38 +14,35 @@ const createCard = (req, res, next) => {
       if (error.name === 'ValidationError') {
         next(new BadRequestError('Данные некорректны'));
       } else {
-        res
-          .status(STATUS_CODE.serverError)
-          .send({ message: 'Произошла ошибка. Повторите запрос' });
+        next(error);
       }
     });
 };
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      res.status(STATUS_CODE.success).send(cards);
+      res.send(cards);
     })
-    .catch(() => {
-      res
-        .status(STATUS_CODE.serverError)
-        .send({ message: 'Произошла ошибка. Повторите запрос' });
-    });
+    .catch(next);
 };
 const deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  const { id } = req.params;
+  Card.findById(id)
+    .orFail(() => new NotFound('Нет карточки по заданному id.'))
     .then((card) => {
-      if (!card) {
-        next(new NotFound('Карточка не найдена.'));
+      if (card.owner.toString() !== req.user._id) {
+        return next(new ForbiddenError('Нельзя удалить чужую карточку'));
       }
-      res.send({ data: card });
+      return card.remove()
+        .then(() => {
+          res.send({ data: card });
+        });
     })
     .catch((error) => {
-      if (error.name === 'CastError') {
-        res
-          .status(STATUS_CODE.dataError)
-          .send({ message: 'Данные некорректны' });
+      if (error.kind === 'ObjectId') {
+        next(new BadRequestError('Невалидный id карточки.'));
       } else {
-        next(new ForbiddenError('Удалить данную карточку невозможно. Вы не являетесь ее создателем'));
+        next(error);
       }
     });
 };
@@ -59,12 +56,13 @@ const likeCard = (req, res, next) => {
     .then((card) => {
       if (!card) {
         next(new NotFound('Карточка не найдена.'));
+      } else {
+        res.send({
+          _id: card._id,
+          name: card.name,
+          link: card.link,
+        });
       }
-      res.send({
-        _id: card._id,
-        name: card.name,
-        link: card.link,
-      });
     })
     .catch((error) => {
       if (error.name === 'CastError') {
@@ -83,12 +81,13 @@ const deleteLikeCard = (req, res, next) => {
     .then((card) => {
       if (!card) {
         next(new NotFound('Карточка не найдена.'));
+      } else {
+        res.send({
+          _id: card._id,
+          name: card.name,
+          link: card.link,
+        });
       }
-      res.send({
-        _id: card._id,
-        name: card.name,
-        link: card.link,
-      });
     })
     .catch((error) => {
       if (error.name === 'CastError') {

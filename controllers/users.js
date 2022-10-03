@@ -6,6 +6,8 @@ const STATUS_CODE = require('../errors/errors');
 const ConflictError = require('../errors/conflictError');
 const BadRequestError = require('../errors/badRequest');
 const NotFound = require('../errors/notFound');
+// eslint-disable-next-line import/no-unresolved
+const NotAuthError = require('../errors/NotAuthError');
 
 const createUser = (req, res, next) => {
   const {
@@ -31,7 +33,8 @@ const createUser = (req, res, next) => {
           next(err);
         }
       });
-  });
+  })
+    .catch(next);
 };
 // eslint-disable-next-line consistent-return
 const login = (req, res, next) => {
@@ -40,7 +43,7 @@ const login = (req, res, next) => {
   User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user) {
-        next(new NotFound());
+        next(new NotAuthError('Ошибка авторизации.'));
       }
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
       res
@@ -54,36 +57,34 @@ const login = (req, res, next) => {
           name: user.name,
           about: user.about,
         });
-    });
+    })
+    .catch(next);
 };
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        next(new NotFound());
+        return next(new NotFound());
       }
       return res.send(user);
     })
     .catch(next);
 };
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       res.status(STATUS_CODE.success).send(users);
     })
-    .catch(() => {
-      res
-        .status(STATUS_CODE.serverError)
-        .send({ message: 'Произошла ошибка на сервере. Повторите запрос' });
-    });
+    .catch(next);
 };
 const getUser = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        next(new NotFound());
+        next(new NotFound('Пользователь не найден.'));
+      } else {
+        res.status(STATUS_CODE.success).send(user);
       }
-      res.status(STATUS_CODE.success).send(user);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
@@ -96,14 +97,15 @@ const getUser = (req, res, next) => {
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
 
-  User.findOneAndUpdate(
+  User.findByIdAndUpdate(
     req.user._id,
     { name, about },
     { new: true, runValidators: true, upsert: false },
   )
+    // eslint-disable-next-line consistent-return
     .then((user) => {
       if (!user) {
-        next(new NotFound());
+        return next(new NotFound('Пользователь не найден.'));
       }
       res.send({
         _id: user._id,
@@ -123,14 +125,15 @@ const updateUser = (req, res, next) => {
 const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
-  User.findOneAndUpdate(
+  User.findByIdAndUpdate(
     req.user._id,
     { avatar },
     { new: true, runValidators: true, upsert: false },
   )
+    // eslint-disable-next-line consistent-return
     .then((user) => {
       if (!user) {
-        next(new NotFound());
+        return next(new NotFound('Пользователь не найден.'));
       }
       res.send({ _id: user._id, avatar: user.avatar });
     })

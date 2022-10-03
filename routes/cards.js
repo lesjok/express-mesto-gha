@@ -7,12 +7,13 @@ const {
   likeCard,
   deleteLikeCard,
 } = require('../controllers/cards');
+const { regExp } = require('../regularExpression');
 
 router.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     link: Joi.string().required()
-      .regex(/^(https?:\/\/)(www\.)?([a-z1-9-]{2,}\.)+[a-z]{2,}\/?[a-z0-9-._~:/?#[\]@!$&'()*+,;=]*/i),
+      .regex(regExp),
   }),
 }), createCard);
 router.get('/', getCards);
