@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     minlength: 2,
     validate(value) {
       if (!validator.isEmail(value)) {
-        throw new Error('Invalid Email');
+        throw new Error('Введите корректный email.');
       }
     },
   },

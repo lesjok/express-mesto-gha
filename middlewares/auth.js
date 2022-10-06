@@ -1,12 +1,11 @@
 const jwt = require('jsonwebtoken');
 const NotAuthError = require('../errors/notAuthError');
 
-// eslint-disable-next-line consistent-return
 const auth = (req, res, next) => {
-  const token = req.cookies.access_token;
+  const token = req.cookies.jwt;
 
   if (!token) {
-    return next(new NotAuthError('Необходима авторизация'));
+    throw new NotAuthError('Необходима авторизация');
   }
 
   let payload;
@@ -14,14 +13,13 @@ const auth = (req, res, next) => {
   try {
     payload = jwt.verify(token, 'super-strong-secret');
   } catch (err) {
-    next(new NotAuthError('Необходима авторизация'));
-    // eslint-disable-next-line consistent-return
-    return;
+    throw new NotAuthError('Необходима авторизация');
   }
 
   req.user = payload;
 
   next();
+  return null;
 };
 
 module.exports = { auth };

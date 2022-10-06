@@ -7,7 +7,7 @@ const ConflictError = require('../errors/conflictError');
 const BadRequestError = require('../errors/badRequest');
 const NotFound = require('../errors/notFound');
 // eslint-disable-next-line import/no-unresolved
-const NotAuthError = require('../errors/NotAuthError');
+const NotAuthError = require('../errors/notAuthError');
 
 const createUser = (req, res, next) => {
   const {
@@ -21,8 +21,8 @@ const createUser = (req, res, next) => {
         name: user.name,
         about: user.about,
         avatar: user.avatar,
-        email: user.email,
         _id: user._id,
+        email,
       }))
       .catch((err) => {
         if (err.name === 'ValidationError') {
@@ -47,7 +47,7 @@ const login = (req, res, next) => {
       }
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
       res
-        .cookie('access_token', token, {
+        .cookie('jwt', token, {
           httpOnly: true,
         })
         .send({
