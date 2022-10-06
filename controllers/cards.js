@@ -26,8 +26,7 @@ const getCards = (req, res, next) => {
     .catch(next);
 };
 const deleteCard = (req, res, next) => {
-  const { id } = req.params;
-  Card.findById(id)
+  Card.findById(req.params.cardId)
     .orFail(() => new NotFound('Нет карточки по заданному id.'))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
@@ -38,13 +37,7 @@ const deleteCard = (req, res, next) => {
           res.send({ data: card });
         });
     })
-    .catch((error) => {
-      if (error.kind === 'ObjectId') {
-        next(new BadRequestError('Невалидный id карточки.'));
-      } else {
-        next(error);
-      }
-    });
+    .catch(next);
 };
 
 const likeCard = (req, res, next) => {

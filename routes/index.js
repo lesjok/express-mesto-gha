@@ -1,8 +1,6 @@
 const routes = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const { login, createUser } = require('../controllers/users');
-const routerUsers = require('./users');
-const routerCards = require('./cards');
 const { regExp } = require('../regularExpression');
 
 routes.post('/signin', celebrate({
@@ -20,7 +18,5 @@ routes.post('/signup', celebrate({
     password: Joi.string().required(),
   }),
 }), createUser);
-routes.use('/users', routerUsers);
-routes.use('/cards', routerCards);
 
-module.exports = { routes };
+module.exports = routes;
