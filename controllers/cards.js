@@ -27,14 +27,27 @@ const getCards = (req, res, next) => {
 };
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .orFail(() => new NotFound('Нет карточки по заданному id.'))
-    .then((card) => {
-      if (card.owner.toString() !== req.user._id) {
-        return next(new ForbiddenError('Нельзя удалить чужую карточку'));
+    .then((result) => {
+      if (!result) {
+        throw new NotFound('Карточка не найдена.');
       }
-      return card.remove()
-        .then(() => {
+      if (!result.owner.equals(req.user._id)) {
+        throw new ForbiddenError();
+      }
+
+      Card.findByIdAndRemove(req.params.cardId)
+        .then((card) => {
+          if (!card) {
+            throw new ForbiddenError();
+          }
           res.send({ data: card });
+        })
+        .catch((err) => {
+          if (err.name === 'CastError') {
+            next(new BadRequestError());
+            return;
+          }
+          next(err);
         });
     })
     .catch(next);

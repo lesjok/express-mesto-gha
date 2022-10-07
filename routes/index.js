@@ -1,15 +1,15 @@
-const routes = require('express').Router();
+const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const { login, createUser } = require('../controllers/users');
-const { regExp } = require('../regularExpression');
+const { regExp } = require('../constants/regularExpression');
 
-routes.post('/signin', celebrate({
+router.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 }), login);
-routes.post('/signup', celebrate({
+router.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
@@ -18,5 +18,7 @@ routes.post('/signup', celebrate({
     password: Joi.string().required(),
   }),
 }), createUser);
-
-module.exports = routes;
+router.get('/signout', (req, res) => {
+  res.clearCookie('jwt').send({ message: 'Выход' });
+});
+module.exports = router;
